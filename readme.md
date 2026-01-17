@@ -1,8 +1,8 @@
-# Metablock Action
+# Deploy a Metablock Web site
 
 [![build](https://github.com/quantmind/metablock-action/workflows/build/badge.svg)](https://github.com/quantmind/metablock-action/actions?query=workflow%3Abuild)
 
-Deploy a new version of an html block to metablock cloud.
+Deploy a new version of a web site to metablock cloud.
 
 ## Inputs
 
