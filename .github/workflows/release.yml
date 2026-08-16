@@ -1,0 +1,77 @@
+name: release
+
+# Triggered by `v*` tags (push one with `make release`). Checks the tag against
+# VERSION, smoke-tests the action by deploying the example bundle to stage, then
+# extracts the matching section from docs/release-notes.md and publishes it as
+# the GitHub Release body. Re-runs idempotently update an existing release
+# rather than failing. Finally the floating major tag (v5) is moved to the
+# released commit so `uses: quantmind/metablock-web@v5` picks the release up.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      METABLOCK_API_TOKEN: ${{ secrets.METABLOCK_API_TOKEN }}
+      METABLOCK_ORG_ID: ${{ secrets.METABLOCK_ORG_ID }}
+      METABLOCK_BLOCK_ID: 85ef26bff9f0454aa6ff0516b6d52420
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check tag matches VERSION
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="v$(cat VERSION)"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "Tag ${TAG} does not match VERSION (${VERSION})" >&2
+            exit 1
+          fi
+      - name: setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: build example
+        run: make build-example
+      - name: stage deployment
+        uses: ./
+        with:
+          env: stage
+          bundle: example/dist
+      - name: Extract release notes
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          awk -v tag="## ${TAG}" '
+            $0 == tag { in_section = 1; next }
+            /^## / && in_section { exit }
+            in_section { print }
+          ' docs/release-notes.md > /tmp/notes.md
+          if [ ! -s /tmp/notes.md ]; then
+            echo "No section '## ${TAG}' found in docs/release-notes.md" >&2
+            exit 1
+          fi
+          echo "--- extracted notes for ${TAG} ---"
+          cat /tmp/notes.md
+      - name: Publish GitHub Release
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --notes-file /tmp/notes.md
+          else
+            gh release create "$TAG" --title "$TAG" --notes-file /tmp/notes.md
+          fi
+      - name: Move major tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          MAJOR="${TAG%%.*}"
+          git tag -f "$MAJOR" "$GITHUB_SHA"
+          git push origin -f "$MAJOR"

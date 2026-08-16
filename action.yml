@@ -1,10 +1,12 @@
-name: "Metablock Action"
-description: "Make a new deployment into metablock cloud"
+name: "Metablock Web"
+description: "Deploy a new version of an html block to metablock cloud"
 inputs:
   token:
     description: "Metablock API token - can be set via the METABLOCK_API_TOKEN env variable"
   block:
     description: "Metablock Block ID - can be set via the METABLOCK_BLOCK_ID env variable"
+  org:
+    description: "Metablock organization id - can be set via the METABLOCK_ORG_ID env variable"
   bundle:
     description: "Filesystem location of the bundle to deploy"
     default: "./dist"
@@ -24,6 +26,8 @@ runs:
     - ${{ inputs.token }}
     - "--block-id"
     - ${{ inputs.block }}
+    - "--org"
+    - ${{ inputs.org }}
     - "--env"
     - ${{ inputs.env }}
     - "--name"

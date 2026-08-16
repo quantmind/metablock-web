@@ -3,5 +3,9 @@ action.yml
 LICENSE
 Makefile
 readme.md
+CLAUDE.md
+VERSION
 .gitignore
 .github
+docs
+example
