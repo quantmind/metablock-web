@@ -9,19 +9,20 @@ jobs:
 
     steps:
       - name: checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - run: make image
 
   test:
     runs-on: ubuntu-latest
     env:
       METABLOCK_API_TOKEN: ${{ secrets.METABLOCK_API_TOKEN }}
+      METABLOCK_ORG_ID: ${{ secrets.METABLOCK_ORG_ID }}
       METABLOCK_BLOCK_ID: 85ef26bff9f0454aa6ff0516b6d52420
 
     steps:
       - name: checkout repo
         uses: actions/checkout@v6
-      - name: build example
+      - name: setup node
         uses: actions/setup-node@v6
         with:
           node-version: 22
