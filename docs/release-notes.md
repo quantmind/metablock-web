@@ -1,5 +1,11 @@
 # Release notes
 
+## v5.1.1
+
+Picks up [metablock](https://pypi.org/project/metablock/) 2.0.1, so shipping no longer times out after 10 seconds. The pin is now `~=2.0.1`, accepting any `2.0.x`.
+
+[Full changelog](https://github.com/quantmind/metablock-web/compare/v5.1.0...v5.1.1)
+
 ## v5.1.0
 
 Brings the action up to date with version 2 of the [metablock](https://pypi.org/project/metablock/)
